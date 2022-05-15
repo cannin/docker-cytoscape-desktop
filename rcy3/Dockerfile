@@ -1,10 +1,15 @@
-FROM ubuntu:20.04
+FROM bioconductor/bioconductor_docker:RELEASE_3_15
+RUN R -e 'BiocManager::install("RCy3")'
 
 # PARAMETERS
 ENV CYTOSCAPE_VERSION 3.9.1
 
 # CHANGE USER
 USER root
+
+ARG USERNAME=rstudio
+ARG PASSWORD=cytoscape
+RUN echo $USERNAME:$PASSWORD | chpasswd
 
 # INSTALL JAVA
 RUN apt-get update && apt-get -y install default-jdk libxcursor1 xvfb supervisor wget x11vnc novnc websockify
@@ -20,6 +25,6 @@ RUN cd /cytoscape-unix-3.9.1/framework/system/org/cytoscape/property-impl/3.9.1 
 # Set JAVA_HOME From sudo update-alternatives --config java
 RUN echo 'JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"' >> /etc/environment
 
-COPY supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 CMD ["/usr/bin/supervisord"]
